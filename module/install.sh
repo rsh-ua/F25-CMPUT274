@@ -3,7 +3,7 @@
 rcfile=""
 cat ${SHELL} | egrep "bash" > /dev/null
 bashFound=$?
-if [ $bashFound -eq 0 ]; then 
+if [ $bashFound -eq 0 ]; then
   rcfile=".bashrc"
 fi
 cat ${SHELL} | egrep "zsh" > /dev/null
@@ -38,4 +38,5 @@ else
   echo "# Line added for CMPUT274 class" >> ~/${rcfile}
   s='export PYTHONPATH=${PYTHONPATH}:'"$(pwd)"
   echo ${s} >> ~/${rcfile}
+  echo "Install complete"
 fi

@@ -26,8 +26,8 @@ def testExact(name : str, expected : any, fn: callable, *args : any):
     testExact("t1", 45, max, -12, 45, 33, 17) -> Test Passed
     testExact("t2", "wow", lambda x, y: x + y, "wo", "ow") -> Test Failed
   '''
-  _register(tuple([name, lambda : f"{name} passed" if fn(*args) == expected else 
-                                  f"{name} failed expected:\n{repr(expected)}\nreceived:\n{repr(fn(*args))}"]))
+  _register(tuple([name, lambda : (f"{name} passed" if fn(*args) == expected else 
+                                  f"{name} failed expected:\n{repr(expected)}\nreceived:\n{repr(fn(*args))}") + "\n"+"-"*20]))
 
 def testWithin(name : str, expected : float, err : float, fn : callable, *args : any):
   '''
@@ -52,8 +52,8 @@ def testWithin(name : str, expected : float, err : float, fn : callable, *args :
     testWithin("t1", 5.8, 0.04, pyth, 5, 3) -> Test Passed
     testWithin("t2", 5.8, 0.03, pyth, 5, 3) -> Test Failed
   ''' 
-  _register(tuple([name, lambda : f"{name} passed" if (fn(*args) < expected + err and fn(*args) > expected - err) else 
-                                  f"{name} failed expected:\n{expected}±{err}\nreceived:\n{fn(*args)}"]))
+  _register(tuple([name, lambda : (f"{name} passed" if (fn(*args) < expected + err and fn(*args) > expected - err) else 
+                                  f"{name} failed expected:\n{expected}±{err}\nreceived:\n{fn(*args)}") + "\n"+"-"*20]))
 
 
 
@@ -242,15 +242,25 @@ def _register(fn, run=False):
   if not run:
     _register.reg = _register.reg + (fn,)
   else:
+    if _register.reg != ():
+      print("-"*20)
+    else:
+      print("No tests to run!")
     for f in _register.reg:
       try:
         print(f[1]())
       except Exception as e:
         print(f"Test {f[0]} caused an error and was unable to be executed")
+        print(f"Error: {e}")
     _register.reg = tuple()
 
 # Set recursion limit so student programs have a larger recursion limit.
 # All student programs should import this module, meaning this should
 # run for all student programs.
+
+def a1Code():
+  from functools import reduce
+  return reduce(lambda x, y: f"{y}{x}{y}", cons("welcome", cons("cmput274", cons("student", empty()))), "")
+
 import sys
 sys.setrecursionlimit(5000)
