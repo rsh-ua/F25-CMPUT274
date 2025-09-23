@@ -139,6 +139,7 @@ def rest(l):
 
   Examples:
     rest(cons(1, cons(2, cons(3, empty()))))
+      -> (2, 3)
   '''
   return l._cdr()
 
