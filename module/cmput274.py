@@ -5,10 +5,12 @@ Includes many definitions used for the class.
 
 As tools become necessary, new tools will be added to this module.
 '''
+from typing import Any, Callable
+from collections.abc import Iterator
 
 
 
-def testExact(name : str, expected : any, fn: callable, *args : any):
+def testExact(name : str, expected : Any, fn: Callable, *args : Any):
   '''
   testExact is a function used to write test cases
              for functions that produce a value that
@@ -29,7 +31,7 @@ def testExact(name : str, expected : any, fn: callable, *args : any):
   _register(tuple([name, lambda : (f"{name} passed" if fn(*args) == expected else 
                                   f"{name} failed expected:\n{repr(expected)}\nreceived:\n{repr(fn(*args))}") + "\n"+"-"*20]))
 
-def testWithin(name : str, expected : float, err : float, fn : callable, *args : any):
+def testWithin(name : str, expected : float, err : float, fn : Callable, *args : Any):
   '''
   testWithin is a function used to write test cases
               for functions that produce a value that
@@ -182,8 +184,9 @@ to read or understand the code below this point.
 #######################################################
 
 class _LList:
-  class _LListIter:
+  class _LListIter(Iterator):
     def __init__(self, t):
+      super()
       self._data = t
     
     def __next__(self):
@@ -241,23 +244,40 @@ def statics(**kwargs):
 @statics(reg=())
 def _register(fn, run=False):
   if not run:
-    _register.reg = _register.reg + (fn,)
+    _register.__dict__['reg'] = _register.__dict__['reg'] + (fn,)
   else:
-    if _register.reg != ():
+    if _register.__dict__['reg'] != ():
       print("-"*20)
     else:
       print("No tests to run!")
-    for f in _register.reg:
+    for f in _register.__dict__['reg']:
       try:
         print(f[1]())
       except Exception as e:
         print(f"Test {f[0]} caused an error and was unable to be executed")
         print(f"Error: {e}")
-    _register.reg = tuple()
+    _register.__dict__['reg'] = tuple()
 
 # Set recursion limit so student programs have a larger recursion limit.
 # All student programs should import this module, meaning this should
 # run for all student programs.
+
+def llist(*items: Any):
+  """"
+  llist creates a LList from the provided items in the same order
+
+  items - any number of items in the new LList
+  Returns - a LList
+
+  Examples:
+    llist(2,3,5,7) -> (2,3,5,7)
+    llist(True,"abc",800815) -> (True,"abc",800815)
+    llist() -> ()
+  """
+  _llist = empty()
+  for item in reversed(items):
+    _llist = cons(item,_llist)
+  return _llist
 
 def a1Code():
   from functools import reduce
