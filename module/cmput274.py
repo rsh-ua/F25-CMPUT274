@@ -139,7 +139,6 @@ def rest(l):
 
   Examples:
     rest(cons(1, cons(2, cons(3, empty()))))
-      -> (2, 3)
   '''
   return l._cdr()
 
@@ -172,12 +171,34 @@ def isEmpty(l):
   '''
   return l._isEmpty()
 
+def LL(*args):
+  '''
+  LL is a function for easily creating a LList from an arbitrary
+     list of values
+
+  returns - A LList
+  *args   - A comma separated list of values. That means you can
+            call LL with any number of arguments, which should be
+            the values you want in your LList in order.
+
+  Examples:
+    LL(1, 2, 3) -> cons(1, cons(2, cons(3, empty())))
+    LL("a", 10, 2, "goodbye") -> cons("a", cons(10, cons(2, cons("goodbye", empty()))))
+  '''
+  return foldr(args, lambda x, y : cons(x, y), empty())
+
+
 #######################################################
 '''
 Everything below here is implementation details,
 and not part of the interface that CMPUT274 students
 need to concern themselves with. There is no need
 to read or understand the code below this point.
+
+For this reason, code below this point is lacking in 
+function specifications or documentation. The intent
+is that CMPUT 274 students do not need to understand
+or know of the existence of the code below.
 '''
 #######################################################
 
@@ -193,15 +214,23 @@ class _LList:
         return val
       else:
         raise StopIteration
+      
 
   def __init__(self, data=(), l=0):
     self._data = data
     self._len = l
 
-
-
+  def __eq__(self, rhs):
+    if not isinstance(rhs, _LList):
+      return False
+    if self._len != rhs._len:
+      return False
+    if isEmpty(self) and isEmpty(rhs):
+      return True
+    return first(self) == first(rhs) and rest(self) == rest(rhs)
   def __iter__(self):
     return _LList._LListIter(self._data)
+  
 
   def _cons(self, elem):
     return _LList((elem, self._data), self._len+1)
@@ -255,13 +284,204 @@ def _register(fn, run=False):
         print(f"Error: {e}")
     _register.reg = tuple()
 
-# Set recursion limit so student programs have a larger recursion limit.
-# All student programs should import this module, meaning this should
-# run for all student programs.
-
 def a1Code():
   from functools import reduce
   return reduce(lambda x, y: f"{y}{x}{y}", cons("welcome", cons("cmput274", cons("student", empty()))), "")
+
+
+
+def TCO(func):
+  '''
+  TCO is a function decorator that can be used on a function
+      that is trivially tail-recursive in order to apply
+      tail-call optimization to that function.
+
+      A function is trivially tail-recursive if its return
+      statements are either:
+      - A final value that can be calculated (i.e. base case)
+      - A recursive case that ONLY returns the result of recursion
+        e.g. 
+        return recFn(...) is good
+        return 1+recFn(...) is no good
+  '''
+  from functools import wraps
+  if not hasattr(TCO, "fn"):
+    setattr(TCO, "fns", dict())
+  @wraps(func)
+  def wrapper(*args, **kwargs):
+    from ast import parse
+    from inspect import getsource
+    if TCO.fns.get(func) != None:
+      return TCO.fns[func](*args, **kwargs)
+    import types
+    ast = parse(getsource(func))
+    fnName = ast.body[0].name
+    tcoAst = _TCOTransformer(fnName).visit(_DecoratorRemover().visit(ast))
+    compiled = compile(tcoAst, __name__, "exec")
+    oldItems = list(locals().items())
+    exec(compiled)
+    for item in locals().items():
+      if item[0] != "oldItems" and item not in oldItems:
+        if isinstance(item[1], types.FunctionType):
+          TCO.fns[func] = item[1]
+    return TCO.fns[func](*args, **kwargs)
+
+  return wrapper
+
+from ast import NodeVisitor, NodeTransformer
+
+class _Thunk:
+  def __init__(self, fn, *args, **kwargs):
+    self._fn = fn
+    self._args = args
+    self._kwargs = kwargs
+
+  def _apply(self):
+    return self._fn(*self._args, **self._kwargs)
+
+class _TCOTransformer(NodeTransformer):
+  def __init__(self, name):
+    '''
+    name - Name of function being transformed
+           used to ensure that there is no return statement
+           that isn't trivially tail call optimizable
+    '''
+    self._name = name
+
+  def visit_Return(self, node):
+    from ast import Call, copy_location, Name, Return, Load
+    if node.value.__class__ == Call:
+      fn = node.value.func
+      if fn.id != self._name:
+        raise BadTCO(f"Cannot tail call optimize {self._name} as it has a recursive case that does not simply return the result of recursion.")
+      args = node.value.args
+      newFn = copy_location(Name(id="_makeThunk", ctx=Load()), node.value.func)
+      newCall = copy_location(Call(func=newFn, args =[fn]+args, keywords=node.value.keywords), node.value)
+      return copy_location(Return(value=newCall), node)
+    else:
+      if _ASTContains(self._name).visit(node):
+        raise BadTCO(f"Cannot tail call optimize {self._name} as it has a recursive case that does not simply return the result of recursion.")
+      return node
+
+class BadTCO(Exception):
+  '''
+  Exception to be generated when @TCO decorator is
+  used incorrectly
+  '''
+  def __init__(self, msg):
+    self.msg = msg
+
+  def __str__(self):
+    return self.msg
+
+class _ASTContains(NodeVisitor):
+  def __init__(self, name):
+    self._name = name
+
+  def visit_Call(self, node):
+    from ast import Name
+    fn = node.func
+    if type(fn) == Name:
+      if fn.id == self._name:
+        return True
+    return self.generic_visit(node)
+  
+    
+  def generic_visit(self, node):
+    from ast import iter_child_nodes
+    b = False
+    for child in iter_child_nodes(node):
+      b = b or self.visit(child)
+    return b
+  
+def _applyThunk(b):
+  return b._apply()
+
+def _makeThunk(fn, *args):
+  return _Thunk(fn, *args)
+
+def trampoline(p):
+  while type(p) == _Thunk:
+    p = _applyThunk(p)
+  return p
+
+class _DecoratorRemover(NodeTransformer):
+  def visit_FunctionDef(self, node):
+    node.decorator_list = []
+    return node
+  
+@TCO
+def _foldltco(it, fn, acc):
+  try:
+    val = next(it)
+  except StopIteration:
+    return acc
+  return _foldltco(it, fn, fn(acc, val))
+
+
+
+@TCO
+def _foldrtco(it, fn, acc):
+  try:
+    val = next(it)
+  except StopIteration:
+    return acc
+  return _foldrtco(it, fn, fn(val, acc))
+
+# These functions will eventually be moved up to the part
+# CMPUT 274 students should be familiar with, but for now
+# are not necessary.
+def foldr(l, fn, base):
+  '''
+  foldr folds the given function over the iterable
+        object, using base as the terminal value
+        Performs a right fold.
+
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the second parameter of fn
+  returns - The result of right-folding fn over the list,
+            Type is the return type of fn
+
+  Examples
+    foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
+    foldr(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (1, 2, 3, 4, 5, 6)
+  '''
+  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(y, x), empty())), fn, base))
+
+def foldl(l, fn, acc):
+  '''
+  foldl folds the given function over the iterable
+        object, using base as the terminal value
+        Performs a left fold.
+
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of 
+            the return value of fn as well as the type 
+            of base, and the second of which must
+            match the type of the elements of l
+  base    - A value, type must match the expected
+            type of the first parameter of fn
+  returns - The result of left-folding fn over the list,
+            Type is the return type of fn
+
+  Examples
+    foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
+    foldl(LL(1,2,3), lambda x, y: cons(y, x), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
+  '''
+  return trampoline(_foldltco(iter(l), fn, acc))
+
+
+  
+# Set recursion limit so student programs have a larger recursion limit.
+# All student programs should import this module, meaning this should
+# run for all student programs.
 
 import sys
 sys.setrecursionlimit(5000)
