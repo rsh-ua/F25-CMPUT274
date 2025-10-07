@@ -437,16 +437,16 @@ def foldr(l, fn, base):
         object, using base as the terminal value
         Performs a right fold.
 
-  l       - an iterable object, e.g. a LList
-  fn      - A function with two parameters
-            The first of which must match the type of the
-            items in l, and the second of which must
-            match the type of the return value 
-            of fn as well as the type of base
-  base    - A value, type must match the expected
-            type of the second parameter of fn
-  returns - The result of right-folding fn over the list,
-            Type is the return type of fn
+  l       - an iterable object containing elements
+            of type X
+  fn      - (X Y -> Y)
+            A function with two parameters whose
+            return type is the same as its second
+            parameter.
+  base    - Type is Y, the value used as the last
+            operand for fn.
+  returns - The result of left-folding fn over the list,
+            Type is Y
 
   Examples
     foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
@@ -460,20 +460,20 @@ def foldl(l, fn, acc):
         object, using base as the terminal value
         Performs a left fold.
 
-  l       - an iterable object, e.g. a LList
-  fn      - A function with two parameters
-            The first of which must match the type of 
-            the return value of fn as well as the type 
-            of base, and the second of which must
-            match the type of the elements of l
-  base    - A value, type must match the expected
-            type of the first parameter of fn
+  l       - an iterable object containing elements
+            of type X
+  fn      - (X Y -> Y)
+            A function with two parameters whose
+            return type is the same as its second
+            parameter.
+  base    - Type is Y, the value used as the last
+            operand for fn.
   returns - The result of left-folding fn over the list,
-            Type is the return type of fn
+            Type is Y
 
   Examples
     foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
-    foldl(LL(1,2,3), lambda x, y: cons(y, x), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
+    foldl(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
   '''
   return trampoline(_foldltco(iter(l), fn, acc))
 
