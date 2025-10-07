@@ -416,7 +416,7 @@ def _foldltco(it, fn, acc):
     val = next(it)
   except StopIteration:
     return acc
-  return _foldltco(it, fn, fn(acc, val))
+  return _foldltco(it, fn, fn(val, acc))
 
 
 
@@ -452,7 +452,7 @@ def foldr(l, fn, base):
     foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
     foldr(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (1, 2, 3, 4, 5, 6)
   '''
-  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(y, x), empty())), fn, base))
+  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(x, y), empty())), fn, base))
 
 def foldl(l, fn, acc):
   '''
