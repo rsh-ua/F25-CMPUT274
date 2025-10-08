@@ -309,6 +309,7 @@ def TCO(func):
     setattr(TCO, "fns", dict())
   @wraps(func)
   def wrapper(*args, **kwargs):
+    print("Wrapper called again")
     from ast import parse
     from inspect import getsource
     if TCO.fns.get(func) != None:
@@ -318,9 +319,9 @@ def TCO(func):
     fnName = ast.body[0].name
     tcoAst = _TCOTransformer(fnName).visit(_DecoratorRemover().visit(ast))
     compiled = compile(tcoAst, __name__, "exec")
-    oldItems = list(locals().items())
-    exec(compiled)
-    for item in locals().items():
+    oldItems = list(globals().items())
+    exec(compiled, globals())
+    for item in globals().items():
       if item[0] != "oldItems" and item not in oldItems:
         if isinstance(item[1], types.FunctionType):
           TCO.fns[func] = item[1]
@@ -437,16 +438,16 @@ def foldr(l, fn, base):
         object, using base as the terminal value
         Performs a right fold.
 
-  l       - an iterable object containing elements
-            of type X
-  fn      - (X Y -> Y)
-            A function with two parameters whose
-            return type is the same as its second
-            parameter.
-  base    - Type is Y, the value used as the last
-            operand for fn.
-  returns - The result of left-folding fn over the list,
-            Type is Y
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the second parameter of fn
+  returns - The result of right-folding fn over the list,
+            Type is the return type of fn
 
   Examples
     foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
@@ -460,16 +461,16 @@ def foldl(l, fn, acc):
         object, using base as the terminal value
         Performs a left fold.
 
-  l       - an iterable object containing elements
-            of type X
-  fn      - (X Y -> Y)
-            A function with two parameters whose
-            return type is the same as its second
-            parameter.
-  base    - Type is Y, the value used as the last
-            operand for fn.
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the first parameter of fn
   returns - The result of left-folding fn over the list,
-            Type is Y
+            Type is the return type of fn
 
   Examples
     foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
