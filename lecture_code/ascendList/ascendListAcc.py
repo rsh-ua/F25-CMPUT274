@@ -9,7 +9,7 @@ def ascendListAcc(n, acc):
 
 
 def ascendList(n):
-  return ascendListAcc(n, empty())
+  return trampoline(ascendListAcc(n, empty()))
 
 
 if __name__ == "__main__":
