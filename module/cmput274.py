@@ -309,7 +309,6 @@ def TCO(func):
     setattr(TCO, "fns", dict())
   @wraps(func)
   def wrapper(*args, **kwargs):
-    print("Wrapper called again")
     from ast import parse
     from inspect import getsource
     if TCO.fns.get(func) != None:
