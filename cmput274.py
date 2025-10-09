@@ -309,6 +309,7 @@ def TCO(func):
     setattr(TCO, "fns", dict())
   @wraps(func)
   def wrapper(*args, **kwargs):
+    print("Wrapper called again")
     from ast import parse
     from inspect import getsource
     if TCO.fns.get(func) != None:
@@ -352,6 +353,8 @@ class _TCOTransformer(NodeTransformer):
     from ast import Call, copy_location, Name, Return, Load
     if node.value.__class__ == Call:
       fn = node.value.func
+      if fn.id != self._name:
+        raise BadTCO(f"Cannot tail call optimize {self._name} as it has a recursive case that does not simply return the result of recursion.")
       args = node.value.args
       newFn = copy_location(Name(id="_makeThunk", ctx=Load()), node.value.func)
       newCall = copy_location(Call(func=newFn, args =[fn]+args, keywords=node.value.keywords), node.value)
