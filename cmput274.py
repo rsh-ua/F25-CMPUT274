@@ -188,6 +188,54 @@ def LL(*args):
   return foldr(args, lambda x, y : cons(x, y), empty())
 
 
+def foldr(l, fn, base):
+  '''
+  foldr folds the given function over the iterable
+        object, using base as the terminal value
+        Performs a right fold.
+
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the second parameter of fn
+  returns - The result of right-folding fn over the list,
+            Type is the return type of fn
+
+  Examples
+    foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
+    foldr(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (1, 2, 3, 4, 5, 6)
+  '''
+  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(x, y), empty())), fn, base))
+
+def foldl(l, fn, acc):
+  '''
+  foldl folds the given function over the iterable
+        object, using base as the terminal value
+        Performs a left fold.
+
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the first parameter of fn
+  returns - The result of left-folding fn over the list,
+            Type is the return type of fn
+
+  Examples
+    foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
+    foldl(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
+  '''
+  return trampoline(_foldltco(iter(l), fn, acc))
+
+
+
 #######################################################
 '''
 Everything below here is implementation details,
@@ -245,6 +293,13 @@ class _LList:
   
   def _isEmpty(self):
     return self._len == 0
+  
+  def __len__(self):
+    return self._len
+  
+  def __getitem__(self, key):
+    assert key >= 0 and key < len(self), "LList index must be in [0, n-1] for LList of length n"
+    return trampoline(_indHelper(self, key))
   
   @staticmethod
   def _reprHelper(t):
@@ -309,7 +364,6 @@ def TCO(func):
     setattr(TCO, "fns", dict())
   @wraps(func)
   def wrapper(*args, **kwargs):
-    print("Wrapper called again")
     from ast import parse
     from inspect import getsource
     if TCO.fns.get(func) != None:
@@ -353,8 +407,6 @@ class _TCOTransformer(NodeTransformer):
     from ast import Call, copy_location, Name, Return, Load
     if node.value.__class__ == Call:
       fn = node.value.func
-      if fn.id != self._name:
-        raise BadTCO(f"Cannot tail call optimize {self._name} as it has a recursive case that does not simply return the result of recursion.")
       args = node.value.args
       newFn = copy_location(Name(id="_makeThunk", ctx=Load()), node.value.func)
       newCall = copy_location(Call(func=newFn, args =[fn]+args, keywords=node.value.keywords), node.value)
@@ -429,56 +481,13 @@ def _foldrtco(it, fn, acc):
     return acc
   return _foldrtco(it, fn, fn(val, acc))
 
-# These functions will eventually be moved up to the part
-# CMPUT 274 students should be familiar with, but for now
-# are not necessary.
-def foldr(l, fn, base):
-  '''
-  foldr folds the given function over the iterable
-        object, using base as the terminal value
-        Performs a right fold.
 
-  l       - an iterable object, e.g. a LList
-  fn      - A function with two parameters
-            The first of which must match the type of the
-            items in l, and the second of which must
-            match the type of the return value 
-            of fn as well as the type of base
-  base    - A value, type must match the expected
-            type of the second parameter of fn
-  returns - The result of right-folding fn over the list,
-            Type is the return type of fn
-
-  Examples
-    foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
-    foldr(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (1, 2, 3, 4, 5, 6)
-  '''
-  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(x, y), empty())), fn, base))
-
-def foldl(l, fn, acc):
-  '''
-  foldl folds the given function over the iterable
-        object, using base as the terminal value
-        Performs a left fold.
-
-  l       - an iterable object, e.g. a LList
-  fn      - A function with two parameters
-            The first of which must match the type of the
-            items in l, and the second of which must
-            match the type of the return value 
-            of fn as well as the type of base
-  base    - A value, type must match the expected
-            type of the first parameter of fn
-  returns - The result of left-folding fn over the list,
-            Type is the return type of fn
-
-  Examples
-    foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
-    foldl(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
-  '''
-  return trampoline(_foldltco(iter(l), fn, acc))
-
-
+@TCO
+def _indHelper(l, i):
+  if i == 0:
+    return first(l)
+  return _indHelper(rest(l), i-1)
+  
   
 # Set recursion limit so student programs have a larger recursion limit.
 # All student programs should import this module, meaning this should
