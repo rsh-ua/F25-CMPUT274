@@ -324,6 +324,7 @@ class _LList:
     if isEmpty(self) and isEmpty(rhs):
       return True
     return first(self) == first(rhs) and rest(self) == rest(rhs)
+  
   def __iter__(self):
     return _LList._LListIter(self._data)
   
@@ -341,6 +342,9 @@ class _LList:
   
   def _isEmpty(self):
     return self._len == 0
+  
+  def __len__(self):
+    return self._len
   
   @staticmethod
   def _reprHelper(t):
