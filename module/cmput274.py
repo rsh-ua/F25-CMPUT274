@@ -4,6 +4,10 @@ Module for use with CMPUT 274 at the University of Alberta
 Includes many definitions used for the class.
 
 As tools become necessary, new tools will be added to this module.
+
+NOTE: Just because a concept is used within this file does NOT
+      mean students are allowed to use that during their assignments
+      if that concept has not yet been discussed in class.
 '''
 
 
@@ -263,6 +267,22 @@ def filter(f, l):
   '''
   return foldr(l, lambda x, y: cons(x, y) if f(x) else y, empty())
 
+def buildList(f, n):
+  '''
+  buildList returns the LList which is the result of mapping
+            function f onto the LList of natural numbers
+            from 0 to n-1
+  
+  n       - A natural number
+  f       - (Nat -> X)
+  returns - LList of X
+
+  Examples:
+    buildList(lambda x: chr(x+65), 5) -> LL('A', 'B', 'C', 'D', 'E')
+    buildList(lambda x: x*2, 3) -> LL(0, 2, 4)
+  '''
+  return _blHelper(f, n)
+
 
 #######################################################
 '''
@@ -501,6 +521,9 @@ def _foldrtco(it, fn, acc):
   except StopIteration:
     return acc
   return _foldrtco(it, fn, fn(val, acc))
+
+def _blHelper(f, n):
+  return map(f, foldr(range(n), lambda x, y: cons(x, y), empty()))
 
 
   
