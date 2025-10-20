@@ -236,7 +236,7 @@ def foldl(l, fn, acc):
 
 def map(f, l):
   '''
-  map maps the given unary function f onto the sequence l
+  map maps the given unary function f onto the LList l
       and returns the result of that mapping.
 
   f       - (X->Y)
@@ -249,7 +249,19 @@ def map(f, l):
   return foldr(l, lambda x, y: cons(f(x), y), empty())
 
 
+def filter(f, l):
+  '''
+  filter filters the LList l using the given predicate f
+      and returns the result of that filter.
 
+  f       - (X->bool)
+  l       - LList of X
+  returns - LList of X
+
+  Examples:
+    filter(lambda x: x%2==1, LL(1, 2, 3)) -> LL(1, 3)
+  '''
+  return foldr(l, lambda x, y: cons(x, y) if f(x) else y, empty())
 
 
 #######################################################
