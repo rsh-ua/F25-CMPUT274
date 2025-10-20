@@ -188,6 +188,70 @@ def LL(*args):
   return foldr(args, lambda x, y : cons(x, y), empty())
 
 
+def foldr(l, fn, base):
+  '''
+  foldr folds the given function over the iterable
+        object, using base as the terminal value
+        Performs a right fold.
+
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the second parameter of fn
+  returns - The result of right-folding fn over the list,
+            Type is the return type of fn
+
+  Examples
+    foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
+    foldr(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (1, 2, 3, 4, 5, 6)
+  '''
+  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(x, y), empty())), fn, base))
+
+def foldl(l, fn, acc):
+  '''
+  foldl folds the given function over the iterable
+        object, using base as the terminal value
+        Performs a left fold.
+
+  l       - an iterable object, e.g. a LList
+  fn      - A function with two parameters
+            The first of which must match the type of the
+            items in l, and the second of which must
+            match the type of the return value 
+            of fn as well as the type of base
+  base    - A value, type must match the expected
+            type of the first parameter of fn
+  returns - The result of left-folding fn over the list,
+            Type is the return type of fn
+
+  Examples
+    foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
+    foldl(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
+  '''
+  return trampoline(_foldltco(iter(l), fn, acc))
+
+def map(f, l):
+  '''
+  map maps the given unary function f onto the sequence l
+      and returns the result of that mapping.
+
+  f       - (X->Y)
+  l       - LList of X
+  returns - LList of Y
+
+  Examples:
+    map(lambda x: x+2, LL(1, 2, 3)) -> LL(3, 4, 5)
+  '''
+  foldr(l, lambda x, y: cons(f(x), y), empty())
+
+
+
+
+
 #######################################################
 '''
 Everything below here is implementation details,
@@ -425,55 +489,6 @@ def _foldrtco(it, fn, acc):
   except StopIteration:
     return acc
   return _foldrtco(it, fn, fn(val, acc))
-
-# These functions will eventually be moved up to the part
-# CMPUT 274 students should be familiar with, but for now
-# are not necessary.
-def foldr(l, fn, base):
-  '''
-  foldr folds the given function over the iterable
-        object, using base as the terminal value
-        Performs a right fold.
-
-  l       - an iterable object, e.g. a LList
-  fn      - A function with two parameters
-            The first of which must match the type of the
-            items in l, and the second of which must
-            match the type of the return value 
-            of fn as well as the type of base
-  base    - A value, type must match the expected
-            type of the second parameter of fn
-  returns - The result of right-folding fn over the list,
-            Type is the return type of fn
-
-  Examples
-    foldr(LL(1,2,3), lambda x, y: x + y, 0) -> 6
-    foldr(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (1, 2, 3, 4, 5, 6)
-  '''
-  return trampoline(_foldrtco(iter(foldl(l, lambda x, y: cons(x, y), empty())), fn, base))
-
-def foldl(l, fn, acc):
-  '''
-  foldl folds the given function over the iterable
-        object, using base as the terminal value
-        Performs a left fold.
-
-  l       - an iterable object, e.g. a LList
-  fn      - A function with two parameters
-            The first of which must match the type of the
-            items in l, and the second of which must
-            match the type of the return value 
-            of fn as well as the type of base
-  base    - A value, type must match the expected
-            type of the first parameter of fn
-  returns - The result of left-folding fn over the list,
-            Type is the return type of fn
-
-  Examples
-    foldl(LL(1,2,3), lambda x, y: x + y, 0) -> 6
-    foldl(LL(1,2,3), lambda x, y: cons(x, y), LL(4,5,6)) -> (3, 2, 1, 4, 5, 6)
-  '''
-  return trampoline(_foldltco(iter(l), fn, acc))
 
 
   
