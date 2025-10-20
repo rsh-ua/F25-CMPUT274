@@ -246,7 +246,7 @@ def map(f, l):
   Examples:
     map(lambda x: x+2, LL(1, 2, 3)) -> LL(3, 4, 5)
   '''
-  foldr(l, lambda x, y: cons(f(x), y), empty())
+  return foldr(l, lambda x, y: cons(f(x), y), empty())
 
 
 
