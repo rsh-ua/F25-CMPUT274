@@ -189,7 +189,7 @@ def LL(*args):
     LL(1, 2, 3) -> cons(1, cons(2, cons(3, empty())))
     LL("a", 10, 2, "goodbye") -> cons("a", cons(10, cons(2, cons("goodbye", empty()))))
   '''
-  return foldr(args, lambda x, y : cons(x, y), empty())
+  return foldr(args, cons, empty())
 
 
 def foldr(l, fn, base):
@@ -346,17 +346,10 @@ class _LList:
   def __len__(self):
     return self._len
   
-  @staticmethod
-  def _reprHelper(t):
-    if t == ():
-      return ""
-    if t[1] == ():
-      return f"{repr(t[0])}"
-    return f"{repr(t[0])}, {_LList._reprHelper(t[1])}"
 
 
   def __repr__(self):
-    return f"({self._reprHelper(self._data)})"
+    return f"({trampoline(_reprHelper(self._data, ''))})"
 
 
 
@@ -387,7 +380,6 @@ def _register(fn, run=False):
 def a1Code():
   from functools import reduce
   return reduce(lambda x, y: f"{y}{x}{y}", cons("welcome", cons("cmput274", cons("student", empty()))), "")
-
 
 
 def TCO(func):
@@ -427,6 +419,14 @@ def TCO(func):
     return TCO.fns[func](*args, **kwargs)
 
   return wrapper
+
+@TCO
+def _reprHelper(t, acc):
+  if t == ():
+    return acc
+  if acc == "":
+    return _reprHelper(t[1], acc + f"{repr(t[0])}")
+  return _reprHelper(t[1], acc + f", {repr(t[0])}")
 
 from ast import NodeVisitor, NodeTransformer
 
