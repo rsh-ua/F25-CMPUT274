@@ -41,7 +41,7 @@ def multTables(m, n):
 
   # So ignore the LList of LLists of it alll
   # and instead solve the problem
-  # how do we build the LList(row(1), row(2), row(3), ... row(n))
+  # how do we build the LList(row(1), row(2), row(3), ... row(m))
 
   # multTables(m, n) -> LList m rows
   # What is our base case?
