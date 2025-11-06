@@ -110,3 +110,20 @@ def adjacentBombs(grid, x, y):
   # Practice problem: Write this as one fold.
   # that is, change the above 3 lines into returning just one fold
   # (for sanity's sake write the fold function not as a lambda)
+
+
+def msGridToString(g):
+  '''
+  Returns the string that represents
+          the MSGrid g
+
+  g - a valid MSGrid
+  returns - str
+
+  Examples:
+    msGridToString((("B", "O", "B"), ("O", "B", "O"), ("B", "B", "B")))
+    -> "🟥🟨🟥
+        🟨🟥🟨
+        🟥🟥🟥"
+  '''
+  
