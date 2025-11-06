@@ -133,6 +133,9 @@ def first(l):
   '''
   return l._car()
 
+def second(l):
+  return first(rest(l))
+
 def rest(l):
   '''
   rest returns an LList that represents all elements in a
