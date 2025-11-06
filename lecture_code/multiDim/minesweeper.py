@@ -93,4 +93,20 @@ def adjacentBombs(grid, x, y):
   return countBombs(perms)
   '''
   # For each pair of deltas (xd, yd) what is the process we want to do?
-  neighbourPos = map(lambda p: LL(x+first(pair), y+first(rest(pair))
+  neighbourPos = map(lambda p: LL(x+first(p), y+second(p)), perms)
+  # Now for each neighour position I want to check is that a bomb or not
+  # or not includes the possibility that it's out of bounds
+  neighbourChars = map(lambda p: grid[second(p)][first(p)] if \
+                       (second(p) >= 0 and second(p) < len(grid) and \
+                       first(p) >=0 and first(p) < len(grid[second(p)])) else "O", 
+                      neighbourPos)
+  # neighbourChars is now the LList of "B" if the char at that neighbour is
+  # a bomb and "O" if it's not, or that neighbour doesn't exist
+  # So we just want to count the "B"s
+  return len(filter(lambda c: c == "B", neighbourChars))
+  # This also could have been written as a fold over perms which is
+  # add 1 to the recursive result if the neighbour at this delta is
+  # is a bomb, add 0 to the recursive result otherwise
+  # Practice problem: Write this as one fold.
+  # that is, change the above 3 lines into returning just one fold
+  # (for sanity's sake write the fold function not as a lambda)
