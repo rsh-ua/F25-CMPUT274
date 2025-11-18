@@ -126,4 +126,12 @@ def msGridToString(g):
         🟨🟥🟨
         🟥🟥🟥"
   '''
-  
+  # First, produce a LList of LLists where the characters "B"
+  # have been translated to "🟥" and the characters "O" have
+  # been translated to "🟨"
+  # Well, for each ROW we want to map onto that row the function
+  # that returns red square if the character is "B" and yellow square
+  # otherwise
+  sqList = map(lambda r: map(lambda c: "🟨" if c == "O" else "🟥", r), g)
+  los = map(lambda loc: foldr(loc, lambda x, ror: x+ror, ""), sqList)
+  return foldr(los, lambda s, ror: s+"\n"+ror, "")[0:-1]

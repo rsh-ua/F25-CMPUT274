@@ -354,7 +354,7 @@ class _LList:
   def __repr__(self):
     return f"({trampoline(_reprHelper(self._data, ''))})"
 
-
+LList = _LList
 
 def statics(**kwargs):
   def decorate(func):
