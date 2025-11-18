@@ -1,4 +1,4 @@
-from cmput274 import
+from cmput274 import *
 
 '''
 SuperList of X is one of:
@@ -32,4 +32,17 @@ def superSum(sl):
   '''
   if isEmpty(sl):
     return 0
-  if type(sl)
+  if type(first(sl)) == int:
+    # Just an int, add it to our recursive result
+    return first(sl) + superSum(rest(sl))
+  if type(first(sl)) == LList:
+    # If the first(sl) is a SuperList then we need
+    # the sum of all ints inside of it... well we have
+    # the function that does that --- this one!
+    return superSum(first(sl)) + superSum(rest(sl))
+
+def superSum2(sl):
+  return foldr(sl,
+              lambda elem, ror: elem + ror if type(elem) == int else \
+                                                 superSum2(elem) + ror
+              , 0)
