@@ -21,6 +21,14 @@ LL(5,
       LL(11, empty(), empty())))
 '''
 
+tExample = LL(5,
+              LL(3,
+                 LL(2, empty(), empty()),
+                 LL(7, empty(), empty())),
+              LL(10,
+                 empty(),
+                 LL(11, empty(), empty())))
+
 # Write a function isLeaf which takes a BTree and returns True
 # if the node given is a leaf node.
 def isLeaf(t):
@@ -44,39 +52,27 @@ def concatenate(l1, l2):
   '''
   return foldr(l1, cons, l2)
 
-def preBTreeToLList(t):
+def postBTreeToLList(t):
   '''
-  preBTreeToLList performs a preorder traversal of t
-                  and builds a LList from the values
-                  of t
+  postBTreeToLList produces a LList which is the result
+                   of walking the tree T in post order
 
-  t - BTree of Any
-  returns - LList of Any
+  t - BTree of X
+  returns - a LList of X
 
   Examples:
-    t = LL(5,
+    t =LL(5,
           LL(3,
-             LL(2, empty(), empty())
+             LL(2, empty(), empty()),
              LL(7, empty(), empty())),
           LL(10,
              empty(),
              LL(11, empty(), empty())))
-
-  preBTreeToList(t) -> LL(5, 3, 2, 7, 10, 11)
+    postBTreeToLList(t) -> (2, 7, 3, 11, 10, 5)
   '''
   if isEmpty(t):
-    # If this the empty BTree then there are NO nodes.
-    # so the list of values is empty
     return empty()
-  if isLeaf(t):
-    # If this is a leaf, then the preorder traversal
-    # only needs to process this node, there are no
-    # subtrees to traverse.
-    # Base case!
-    return LL(first(t))
-  # Our goal is to produce the LList which is the set of
-  # values (thisNodesValue, allLeftSubTreeValues, allRightSubTreeValues)
-  current = LL(first(t))
-  leftProcess = preBTreeToLList(second(t))
-  rightProcess = preBTreeToLList(third(t))
-  return concatenate(current, concatenate(leftProcess, rightProcess))
+  lror = postBTreeToLList(second(t))
+  rror = postBTreeToLList(third(t))
+  cur = LL(first(t))
+  return concatenate(lror, concatenate(rror, cur))
