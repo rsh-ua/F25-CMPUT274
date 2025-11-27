@@ -6,14 +6,14 @@ def strToTokenList(s):
   strToTokenList takes a string that represents a valid fimpl program
                  and returns the sequential LList of tokens that
                  appear in that program.
-
+  
   s       - str
   returns - LList of str
 
   Examples:
-    strToTokenList("mul add -3 5 sub 1 -4 ")
+    strToTokenList("mul add -3 5 sub 1 -4 ") 
         -> LL("mul", "add", "-3", "5", "sub", "1", "-4")
-    strToTokenList("add      -2\n\n   \t4")
+    strToTokenList("add      -2\n\n   \t4") 
         -> LL("add", "-2", "4")
   '''
   pass
@@ -102,7 +102,7 @@ def lookup(key, pairs):
   pass
 
 
-def evalExpr(eTree):
+def evalExpr(eTree, defns):
   '''
   evalExpr returns the result of evaluating the given ExprTree eTree given
            the provided identifier definitions in the LList of pairs defns
@@ -123,3 +123,57 @@ def evalExpr(eTree):
   '''
   pass
 
+
+def main():
+  testExact("tList1", LL("mul", "add", "-3", "5", "sub", "1", "-4"),
+            strToTokenList, "mul add -3 5 sub 1 -4 ")
+  testExact("tList2", LL("add", "-2", "4"),
+            strToTokenList, "add      -2\n\n   \t4")
+
+  testExact("isID1", True, isIdentifier, "foo")
+  testExact("isID2", False, isIdentifier, "Foo")
+  testExact("isID3", False, isIdentifier, "add")
+  testExact("isID4", True, isIdentifier, "xDIM")
+
+  testExact("exprTree1", 
+            LL(LL('binOp',
+                  'add',
+                  LL('intLit', -2),
+                  LL('intLit', 4)),
+              LL()), 
+            tokensToExprTree, 
+            LL("add", "-2", "4"))
+
+  testExact("exprTree2",
+            LL(LL('binOp',
+                  'add',
+                  LL('ident', 'x'),
+                  LL('binOp', 'add',
+                     LL('intLit', 5),
+                     LL('intLit', 3))),
+                LL("mul", "10", "2")),
+            tokensToExprTree,
+            LL("add", "x", "add", "5", "3", "mul", "10", "2"))
+
+  testExact("lookup1", 5, lookup, "x", LL(LL("a", 3), LL("x", 5)))
+
+  
+  fimplProg1 = "mul add -3 5 sub 1 -4 "
+  genTree = lambda prog: first(tokensToExprTree(strToTokenList(prog)))
+  testExact("eval1", 10, evalExpr,
+            genTree(fimplProg1), empty())
+  fimplProg2 = "add x 3"
+  defns1 = LL(LL("x", 2))
+  testExact("eval2", 5, evalExpr, 
+            genTree(fimplProg2), defns1)
+
+  defns2 = LL(LL("x", -25))
+  testExact("eval2", -22, evalExpr, 
+            genTree(fimplProg2), defns2)
+
+
+  # Place your additional tests above here
+  runTests()
+
+if __name__ == "__main__":
+  main()
