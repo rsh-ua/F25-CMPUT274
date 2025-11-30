@@ -139,6 +139,23 @@ def second(l):
 def third(l):
   return first(rest(rest(l)))
 
+def fourth(l):
+  return first(rest(rest(rest(l))))
+
+def nth(l, i):
+  '''
+  nth returns the element at index i in a llist, similar to list[i]
+
+  l       - an LList longer than i
+  i       - which element to get (0-indexed, 0 is first)
+  returns - element at i in l
+
+  Examples:
+    nth(LL(1, 2, 3, 4), 2) -> 3
+  '''
+  assert 0 <= i < len(l)-1
+  return first(l) if i == 0 else nth(rest(l), i-1)
+
 def rest(l):
   '''
   rest returns an LList that represents all elements in a
