@@ -139,6 +139,12 @@ def second(l):
 def third(l):
   return first(rest(rest(l)))
 
+def fourth(l):
+  return first(rest(rest(rest(l))))
+
+def fifth(l):
+  return first(rest(rest(rest(rest(l)))))
+
 def rest(l):
   '''
   rest returns an LList that represents all elements in a
