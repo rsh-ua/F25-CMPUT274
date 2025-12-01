@@ -1,6 +1,6 @@
 from cmput274 import *
 # The line above should appear in all of your assignment solutions
-# a the very start.
+# at the very start.
 
 def f1(s, c):
   '''
@@ -134,7 +134,7 @@ def main():
 
   The argument provided for one of your passing test cases must be no more than
   20 away from a failing test case. That is, there should be at least one
-  of your test cases where the argument you provide is X, and te test case
+  of your test cases where the argument you provide is X, and the test case
   passes, but X-20 fails.
   '''
 
