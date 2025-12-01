@@ -30,8 +30,19 @@ def testExact(name : str, expected : any, fn: callable, *args : any):
     testExact("t1", 45, max, -12, 45, 33, 17) -> Test Passed
     testExact("t2", "wow", lambda x, y: x + y, "wo", "ow") -> Test Failed
   '''
-  _register(tuple([name, lambda : (f"{name} passed" if fn(*args) == expected else 
-                                  f"{name} failed expected:\n{repr(expected)}\nreceived:\n{repr(fn(*args))}") + "\n"+"-"*20]))
+  def exactTest():
+    import io
+    import sys
+    catchOut = io.StringIO()
+    originalStdOut = sys.stdout
+    sys.stdout = catchOut
+    res = fn(*args)
+    sys.stdout = originalStdOut
+    if res == expected:
+      return f"{name} passed\n" +"-"*20
+    else:
+      f"{name} failed expected:\n{repr(expected)}\nreceived:\n{repr(res)}\n" + "-"*20
+  _register((name, exactTest))
 
 def testWithin(name : str, expected : float, err : float, fn : callable, *args : any):
   '''
@@ -56,8 +67,39 @@ def testWithin(name : str, expected : float, err : float, fn : callable, *args :
     testWithin("t1", 5.8, 0.04, pyth, 5, 3) -> Test Passed
     testWithin("t2", 5.8, 0.03, pyth, 5, 3) -> Test Failed
   ''' 
-  _register(tuple([name, lambda : (f"{name} passed" if (fn(*args) < expected + err and fn(*args) > expected - err) else 
-                                  f"{name} failed expected:\n{expected}±{err}\nreceived:\n{fn(*args)}") + "\n"+"-"*20]))
+  def withinTest():
+    import io
+    import sys
+    catchOut = io.StringIO()
+    originalStdOut = sys.stdout
+    sys.stdout = catchOut
+    res = fn(*args)
+    sys.stdout = originalStdOut
+    if res < expected+err and res > expected - err:
+      return f"{name} passed\n" +"-"*20
+    else:
+      f"{name} failed expected:\n{repr(expected)}±{err}\nreceived:\n{repr(res)}\n" + "-"*20
+  _register((name,withinTest))
+
+  
+
+def testPrint(name: str, expected: str, fn: callable, *args :any):
+  def pTest():
+    import io
+    import sys
+    catchOut = io.StringIO()
+    originalStdOut = sys.stdout
+    sys.stdout = catchOut
+    fn(*args)
+    caught = catchOut.getvalue()
+    sys.stdout = originalStdOut
+    if caught == expected:
+      return f"{name} passed\n" +"-"*20
+    else:
+      return f"{name} failed expected:\n{expected}\nreceived\n{caught}\n" +"-"*20
+  _register((name,pTest))
+
+
 
 
 
