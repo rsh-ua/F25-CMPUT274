@@ -25,6 +25,12 @@ def main():
       # AND I is mutated to be
       # "there\nfriend\n"
   '''
+  # Note: Based on the behaviour of the input function
+  #       as described above. A call to
+  #       input(msg) can be though of as:
+  # print(msg, end="")
+  # input()
+
   x = input()
   print("X's value: " + repr(x))
 

@@ -75,6 +75,18 @@ def displayHand(hand):
   outString = "|" + foldr(los, lambda cardS, ror : cardS + "|" + ror, "")
   print(outString)
 
+def replaceInd(l, i, val):
+  '''
+  returns a version of LList l
+  where the ith item has been replaced
+  with val
+
+  Assumes i is a valid index of l
+  '''
+  if i == 0:
+    return cons(val, rest(l))
+  return cons(first(l), replaceInd(rest(l), i-1, val))
+
 def askDiscard(hand):
   '''
   askDiscard asks the user which card they would
@@ -97,8 +109,65 @@ def askDiscard(hand):
       -> LL(LL(13, 2), LL(6, 2), LL(7, 1),
                 LL(14, 0), LL(4, 3), LL(10, 0))
   '''
+  # Side note here... this function would be more
+  # reusable as a pure function.
+  # So this function instead of being the one to
+  # read input and generate a random number
+  # this function should just take 3 parameters
+  # first, the original hand
+  # second, the index of the card to discard
+  # third, the new card to insert
+  # That way someone else can read input and
+  # generate a random number and then simply
+  # call this function. That way this function
+  # can be used even in cases where we DON'T
+  # get that answer from input or from a random
+  # number
+  # e.g. what if we change our program to pull
+  # a card from an already shuffled deck?
+  # or what if the card to discard does not come from the
+  # input stream but from somewhere else?
   import random
-  
+  msg = "Which card number would you like to discard? [1-" + str(len(hand)) + "]: "
+  # Note, as per discussion in class the above line could be replaced with
+  '''
+  msg = f"Which card number would you like to discard? [1-{len(hand)}]: "
+  '''
+  discSelection = input(msg)
+  # Must convert discSelection which is a string because input returns a str
+  # to an int
+  # Note: they give us a number i in [1-n] meaning the ith card
+  #       since we zero index the index of the ith card is
+  #       i-1
+  ind = int(discSelection) - 1
+  # Need to generate a random card. Generating a card is
+  # Generating a random rank and a random suit
+  # The ranks must be in the range [2-14] and the
+  # suits must be in the range[0-3]
+  # The function randint in the random module
+  # Takes two integer parameters start and end
+  # and returns a random integer in the range
+  # [start, end]
+  # Since we simply wrote
+  # import random
+  # and not
+  # from random import *
+  # or
+  # from random import randint
+  # We did not pull the definitions from the
+  # random module into our global scope
+  # as such, we must specify when an identifier
+  # is defined within the scope of the random
+  # module.
+  # We do so with the member access operator .
+  # expr.ident
+  # expr must be an object (any data in python)
+  # and rhs must be an identifier that is
+  # defined within that object
+  rank = random.randint(2, 14)
+  suit = random.randint(0, 3)
+  card = LL(rank, suit)
+  return replaceInd(hand, ind, card)
 
 def main():
   hand = LL(LL(13, 2), LL(2, 3), LL(7, 1),
@@ -106,7 +175,14 @@ def main():
 
   hand = mergeSort(hand, suitOrder)
   displayHand(hand)
-
+  command = input("Enter command (d, q): ")
+  while command != "q":
+    if command == "d":
+      hand = mergeSort(askDiscard(hand), suitOrder)
+      displayHand(hand)
+    else:
+      print(f"Invalid command {command} must be d or q")
+    command = input("Enter command (d, q): ")
 
 if __name__ == "__main__":
   main()
