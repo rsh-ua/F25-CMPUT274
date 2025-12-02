@@ -1,0 +1,4 @@
+x <- 3
+Disp mul x 2
+x <- add x 1
+Disp mul x 2

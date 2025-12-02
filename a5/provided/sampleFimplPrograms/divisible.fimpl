@@ -1,0 +1,17 @@
+divisor <- 5
+start <- 1
+total <- 100
+
+Rpt total {
+  quotient <- div start divisor
+  rem <- sub start mul quotient divisor
+  Rpt sub rem 1 {
+    rem <- sub rem 1
+  }
+  rem <- sub rem 1
+  rem <- mul rem -1
+  Rpt rem {
+    Disp start
+  }
+  start <- add start 1
+}

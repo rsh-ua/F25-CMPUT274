@@ -1,0 +1,21 @@
+total <- 200
+cur <- 2
+Rpt total {
+  curDiv <- 2
+  iters <- sub cur curDiv
+  isPrime <- 1
+  Rpt iters {
+    quotient <- div cur curDiv
+    rem <- sub cur mul quotient curDiv
+    negateRem <- sub 1 mul add rem 1 rem
+    Rpt negateRem {
+      isPrime <- 0
+    }
+    curDiv <- add curDiv 1
+  }
+
+  Rpt isPrime {
+    Disp cur
+  }
+  cur <- add cur 1
+}

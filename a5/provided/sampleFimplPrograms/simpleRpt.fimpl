@@ -1,0 +1,5 @@
+x <- 0
+Rpt 5 {
+  Disp x
+  x <- add x 1
+}
