@@ -1,4 +1,4 @@
-
+# PRACTICE QUESTION!
 
 def removeOccurrences(l, elem):
   '''
@@ -17,3 +17,12 @@ def removeOccurrences(l, elem):
       -> 7
       mutates the list to be [2, 3, 4, 5, 6]
   '''
+  count = 0
+  i = 0
+  while i < len(l):
+    if l[i] == elem:
+      count = count + 1
+      l.pop(i)
+    else:
+      i = i + 1
+  return count
