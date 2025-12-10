@@ -11,8 +11,8 @@ def deepcopy(l):
   '''
   deepcopy returns a DEEPCOPY of the list l
 
-  l       - list of any
-  returns - list of any
+  l       - X
+  returns - X
 
   Side effects: None
 
@@ -20,3 +20,22 @@ def deepcopy(l):
     deepcopy([[1, 2], [3, 4]])
       -> [[1, 2], [3, 4]] BUT ALL ALIASING IS BROKEN!
   '''
+  if type(l) != list:
+    return l
+  newL = []
+  for item in l:
+    newL.append(deepcopy(item))
+  return newL
+
+
+def naiveDeepCopy(l):
+  # Only deep copies the first depth level
+  # if there are mutable data types deeper
+  # than the first level it won't deepcopy them
+  newL= []
+  for item in l:
+    if type(item) == list:
+      newL.append(item.copy())
+    else:
+      newL.append(item)
+  return newL
